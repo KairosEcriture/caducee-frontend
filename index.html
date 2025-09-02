@@ -5,24 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caducée - Assistant de Pré-Analyse Médicale</title>
     <style>
-        /* CSS COMPLET ET CORRECT */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 600px; }
+        h1 { text-align: center; color: #2c3e50; }
+        textarea { width: 100%; height: 100px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit; margin-bottom: 20px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border: none; background-color: #3498db; color: white; border-radius: 8px; font-size: 1em; cursor: pointer; transition: background-color 0.3s; }
+        button:disabled { background-color: #95a5a6; }
+        #result-container { margin-top: 30px; }
+        .disclaimer { font-size: 0.8em; color: #e74c3c; text-align: center; border: 1px solid #e74c3c; padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
-    <!-- ... (HTML du body inchangé) ... -->
+    <div class="container">
+        <h1>Caducée</h1>
+        <p style="text-align: center; color: #7f8c8d;">Décrivez vos symptômes, obtenez une pré-analyse instantanée.</p>
+        <form id="analysis-form">
+            <textarea id="symptoms-input" placeholder="Ex: J'ai mal à la tête, de la fièvre et je tousse..."></textarea>
+            <button type="submit" id="submit-button">Analyser mes symptômes</button>
+        </form>
+        <div id="result-container"></div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const analysisForm = document.getElementById('analysis-form');
             const symptomsInput = document.getElementById('symptoms-input');
             const submitButton = document.getElementById('submit-button');
             const resultContainer = document.getElementById('result-container');
-            
-            // --- LA CORRECTION EST ICI ---
             const API_BASE_URL = 'https://caducee-api.onrender.com';
 
             analysisForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
-                // ... (le reste du script est maintenant correct)
+                submitButton.textContent = 'Analyse en cours...';
+                submitButton.disabled = true;
+                resultContainer.innerHTML = '';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/analysis`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symptoms: symptomsInput.value })
+                    });
+                    if (!response.ok) { throw new Error('Erreur de l\'API'); }
+                    const data = await response.json();
+
+                    let resultHtml = `<h3>Pré-analyse pour : ${data.symptom}</h3>`;
+                    resultHtml += '<h4>Diagnostics Différentiels Possibles :</h4><ul>';
+                    (data.differential_diagnoses || []).forEach(diag => { resultHtml += `<li>${diag}</li>`; });
+                    resultHtml += '</ul>';
+                    resultHtml += '<h4>Questions à se poser :</h4><ul>';
+                    (data.questions_to_ask || []).forEach(q => { resultHtml += `<li>${q}</li>`; });
+                    resultHtml += '</ul>';
+                    resultHtml += '<h4>Recommandations :</h4><ul>';
+                    (data.recommendations || []).forEach(r => { resultHtml += `<li>${r}</li>`; });
+                    resultHtml += '</ul>';
+                    resultHtml += `<p class="disclaimer">${data.disclaimer}</p>`;
+                    resultContainer.innerHTML = resultHtml;
+
+                } catch (error) {
+                    resultContainer.innerHTML = `<p style="color: red;">Erreur : ${error.message}</p>`;
+                } finally {
+                    submitButton.textContent = 'Analyser mes symptômes';
+                    submitButton.disabled = false;
+                }
             });
         });
     </script>
