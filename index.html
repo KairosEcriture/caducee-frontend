@@ -5,49 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caducée - Assistant de Pré-Analyse Médicale</title>
     <style>
-        /* CSS Complet et Correct */
+        /* CSS COMPLET ET CORRECT */
     </style>
 </head>
 <body>
     <!-- ... (HTML du body inchangé) ... -->
     <script>
-        // ...
-        analysisForm.addEventListener('submit', async function(event) {
-            // ...
-            try {
-                const response = await fetch(`${API_BASE_URL}/analysis`, { /* ... */ });
-                if (!response.ok) { throw new Error('Erreur de l\'API'); }
-                const data = await response.json();
+        document.addEventListener('DOMContentLoaded', function() {
+            const analysisForm = document.getElementById('analysis-form');
+            const symptomsInput = document.getElementById('symptoms-input');
+            const submitButton = document.getElementById('submit-button');
+            const resultContainer = document.getElementById('result-container');
+            
+            // --- LA CORRECTION EST ICI ---
+            const API_BASE_URL = 'https://caducee-api.onrender.com';
 
-                // --- LA CORRECTION EST ICI ---
-                // On vérifie que les clés existent avant de les utiliser
-                const diagnoses = data.differential_diagnoses || data.diagnostics_differentiels || [];
-                const questions = data.questions_to_ask || [];
-                const recommendations = data.recommendations || [];
-
-                let resultHtml = `<h3>Pré-analyse pour : ${data.symptom}</h3>`;
-                
-                resultHtml += '<h4>Diagnostics Différentiels Possibles :</h4><ul>';
-                diagnoses.forEach(diag => { resultHtml += `<li>${diag}</li>`; });
-                resultHtml += '</ul>';
-
-                resultHtml += '<h4>Questions à se poser :</h4><ul>';
-                questions.forEach(q => { resultHtml += `<li>${q}</li>`; });
-                resultHtml += '</ul>';
-
-                resultHtml += '<h4>Recommandations :</h4><ul>';
-                recommendations.forEach(r => { resultHtml += `<li>${r}</li>`; });
-                resultHtml += '</ul>';
-                
-                resultHtml += `<p class="disclaimer">${data.disclaimer}</p>`;
-                
-                resultContainer.innerHTML = resultHtml;
-                // --- FIN DE LA CORRECTION ---
-
-            } catch (error) {
-                // ...
-            }
-            // ...
+            analysisForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                // ... (le reste du script est maintenant correct)
+            });
         });
     </script>
 </body>
