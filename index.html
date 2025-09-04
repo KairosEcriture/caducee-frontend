@@ -5,27 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caducée - Agent Médical IA</title>
     <style>
+        /* CSS COMPLET ET CORRECT */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .container { background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 600px; }
         h1 { text-align: center; color: #2c3e50; margin-top: 0; }
-        .tagline { text-align: center; color: #7f8c8d; margin-top: -15px; margin-bottom: 30px; font-weight: 300; }
-        textarea { width: 100%; height: 100px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit; margin-bottom: 20px; box-sizing: border-box; resize: vertical; }
-        button { width: 100%; padding: 15px; border: none; background-color: #3498db; color: white; border-radius: 8px; font-size: 1em; font-weight: 600; cursor: pointer; transition: background-color 0.3s; }
-        button:disabled { background-color: #95a5a6; cursor: not-allowed; }
+        h1 + p { text-align: center; color: #7f8c8d; margin-top: -15px; margin-bottom: 30px; font-weight: 600; }
+        textarea { width: 100%; height: 100px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit; margin-bottom: 20px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border: none; background-color: #3498db; color: white; border-radius: 8px; font-size: 1em; cursor: pointer; transition: background-color 0.3s; }
+        button:disabled { background-color: #95a5a6; }
         #result-container { margin-top: 30px; }
         .dialogue-box { margin-top: 20px; border: 1px solid #eee; padding: 15px; border-radius: 8px; }
         .question-text { font-weight: 600; margin-bottom: 15px; }
-        .answer-options { display: flex; gap: 10px; flex-wrap: wrap; }
-        .answer-options button { width: auto; flex-grow: 1; }
-        .disclaimer { font-size: 0.9em; color: #7f8c8d; text-align: center; border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px; }
-        .disclaimer strong { color: #e74c3c; }
+        .answer-options { display: flex; gap: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Caducée</h1>
-        <p class="tagline">Agent Médical IA</p>
+        <p>Agent Médical IA</p>
         <form id="analysis-form">
             <textarea id="symptoms-input" placeholder="Décrivez vos symptômes..."></textarea>
             <button type="submit" id="submit-button">Analyser mes symptômes</button>
@@ -44,6 +42,7 @@
             let conversationHistory = [];
             let initialSymptoms = "";
 
+            // LA CORRECTION EST DANS L'APPEL À CETTE FONCTION
             analysisForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
                 submitButton.textContent = 'Analyse en cours...';
@@ -53,17 +52,17 @@
                 initialSymptoms = symptomsInput.value;
 
                 try {
-                    const response = await fetch(${API_BASE_URL}/analysis, {
+                    const response = await fetch(`${API_BASE_URL}/analysis`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ symptoms: initialSymptoms })
                     });
-                    if (!response.ok) { const err = await response.json(); throw new Error(err.detail); }
+                    if (!response.ok) { throw new Error('Erreur de l\'API'); }
                     const data = await response.json();
                     displayInitialAnalysis(data);
 
                 } catch (error) {
-                    resultContainer.innerHTML = <p style="color: red;">Erreur : ${error.message}</p>;
+                    resultContainer.innerHTML = `<p style="color: red;">Erreur : ${error.message}</p>`;
                 } finally {
                     submitButton.textContent = 'Analyser mes symptômes';
                     submitButton.disabled = false;
@@ -71,9 +70,9 @@
             });
 
             function displayInitialAnalysis(data) {
-                let resultHtml = <h3>Consultation pour : ${data.symptom}</h3>;
+                let resultHtml = `<h3>Consultation pour : ${data.symptom}</h3>`;
                 resultHtml += '<h4>Analyse :</h4><ul>';
-                (data.differential_diagnoses || []).forEach(diag => { resultHtml += <li>${diag}</li>; });
+                (data.differential_diagnoses || []).forEach(diag => { resultHtml += `<li>${diag}</li>`; });
                 resultHtml += '</ul>';
                 resultContainer.innerHTML = resultHtml;
                 
@@ -101,12 +100,12 @@
                 document.querySelectorAll('.answer-btn').forEach(button => {
                     button.addEventListener('click', () => {
                         let answer = button.dataset.answer;
-                        const details = prompt(Vous avez répondu "${answer}". Voulez-vous ajouter des détails ?, "");
-                        if (details && details.trim() !== "") {
-                            answer += ` (${details.trim()})`;
+                        const details = prompt(`Vous avez répondu "${answer}". Voulez-vous ajouter des détails ?`);
+                        if (details) {
+                            answer += ` (${details})`;
                         }
                         conversationHistory.push({ question, answer });
-                        dialogueBox.innerHTML = <p>Votre réponse : <em>${answer}</em></p>;
+                        dialogueBox.innerHTML = `<p>Votre réponse : <em>${answer}</em></p>`;
                         refineAnalysis();
                     });
                 });
@@ -114,12 +113,12 @@
 
             async function refineAnalysis() {
                 try {
-                    const response = await fetch(${API_BASE_URL}/analysis/refine, {
+                    const response = await fetch(`${API_BASE_URL}/analysis/refine`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ symptoms: initialSymptoms, history: conversationHistory })
                     });
-                    if (!response.ok) { const err = await response.json(); throw new Error(err.detail); }
+                    if (!response.ok) { throw new Error('Erreur de l\'API d\'affinage'); }
                     const data = await response.json();
 
                     if (data.next_question) {
@@ -130,16 +129,14 @@
                         askNextQuestion(null);
                     }
                 } catch (error) {
-                    resultContainer.innerHTML += <p style="color: red;">Erreur : ${error.message}</p>;
+                    resultContainer.innerHTML += `<p style="color: red;">Erreur : ${error.message}</p>`;
                 }
             }
 
             function displayFinalRecommendation(recommendation) {
-                // Traduction de "Disclaimer"
-                const finalHtml = recommendation.replace(/\\*Disclaimer:\\*/g, '<strong>Avertissement :</strong>');
                 const finalBox = document.createElement('div');
                 finalBox.className = 'dialogue-box';
-                finalBox.innerHTML = <h4>Recommandation finale :</h4><p>${finalHtml}</p>;
+                finalBox.innerHTML = `<h4>Recommandation finale :</h4><p>${recommendation.replace('Disclaimer', 'Avertissement')}</p>`;
                 resultContainer.appendChild(finalBox);
             }
         });
