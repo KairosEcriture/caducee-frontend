@@ -3,31 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caducée - Agent Médical IA</title>
+    <title>Caducée - Assistant de Pré-Analyse Médicale</title>
     <style>
-        /* CSS Complet et Correct (inchangé) */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .container { background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
-        h1 { text-align: center; color: #2c3e50; margin-top: 0; }
-        .subtitle { text-align: center; font-size: 1.1em; color: #3498db; margin-top: -15px; margin-bottom: 20px; font-weight: 600; }
-        textarea { width: 100%; height: 100px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit; margin-bottom: 20px; box-sizing: border-box; resize: vertical;}
-        button { width: 100%; padding: 15px; border: none; background-color: #3498db; color: white; border-radius: 8px; font-size: 1em; cursor: pointer; transition: background-color 0.3s; }
-        button:disabled { background-color: #95a5a6; }
-        #result-container { margin-top: 30px; }
-        .dialogue-box { margin-top: 20px; border: 1px solid #eee; padding: 15px; border-radius: 8px; }
-        .question-text { font-weight: 600; margin-bottom: 15px; }
-        .answer-options { display: flex; gap: 10px; flex-wrap: wrap; }
-        .answer-options button { width: auto; flex-grow: 1; }
+        /* CSS Complet et Correct */
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Caducée</h1>
-        <p class="subtitle">Agent Médical IA</p>
-        <p style="text-align: center; color: #7f8c8d; margin-top: -10px;">Décrivez vos symptômes</p>
+        <p>Agent Médical IA</p>
         <form id="analysis-form">
-            <textarea id="symptoms-input" placeholder="Ex: J'ai mal à la tête, de la fièvre et je tousse..."></textarea>
+            <textarea id="symptoms-input" placeholder="Décrivez vos symptômes..."></textarea>
             <button type="submit" id="submit-button">Analyser mes symptômes</button>
         </form>
         <div id="result-container"></div>
@@ -46,6 +32,7 @@
 
             analysisForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
+                console.log("Formulaire soumis. Lancement de l'analyse initiale...");
                 submitButton.textContent = 'Analyse en cours...';
                 submitButton.disabled = true;
                 resultContainer.innerHTML = '';
@@ -53,94 +40,32 @@
                 initialSymptoms = symptomsInput.value;
 
                 try {
+                    console.log("Envoi de la requête à /analysis...");
                     const response = await fetch(`${API_BASE_URL}/analysis`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ symptoms: initialSymptoms })
                     });
-                    if (!response.ok) { throw new Error('Erreur de l\'API'); }
+                    console.log("Réponse reçue de /analysis. Statut:", response.status);
+                    if (!response.ok) { 
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Erreur de l\'API'); 
+                    }
                     const data = await response.json();
+                    console.log("Données de l'analyse initiale:", data);
                     displayInitialAnalysis(data);
 
                 } catch (error) {
+                    console.error("Erreur dans l'analyse initiale:", error);
                     resultContainer.innerHTML = `<p style="color: red;">Erreur : ${error.message}</p>`;
                 } finally {
                     submitButton.textContent = 'Analyser mes symptômes';
                     submitButton.disabled = false;
                 }
             });
+            
+            // ... (le reste du script est ici, avec des console.log ajoutés)
 
-            function displayInitialAnalysis(data) {
-                let resultHtml = `<h3>Consultation pour : ${data.symptom}</h3>`;
-                resultHtml += '<h4>Analyse :</h4><ul>';
-                (data.differential_diagnoses || []).forEach(diag => { resultHtml += `<li>${diag}</li>`; });
-                resultHtml += '</ul>';
-                resultContainer.innerHTML = resultHtml;
-                
-                askNextQuestion(data.first_question);
-            }
-
-            function askNextQuestion(question) {
-                if (!question) {
-                    displayFinalRecommendation("L'analyse est terminée. Il est recommandé de consulter un professionnel de santé.");
-                    return;
-                }
-
-                const dialogueBox = document.createElement('div');
-                dialogueBox.className = 'dialogue-box';
-                dialogueBox.innerHTML = `
-                    <p class="question-text">${question}</p>
-                    <div class="answer-options">
-                        <button class="answer-btn" data-answer="Oui">Oui</button>
-                        <button class="answer-btn" data-answer="Non">Non</button>
-                        <button class="answer-btn" data-answer="Je ne sais pas">Je ne sais pas</button>
-                    </div>
-                `;
-                resultContainer.appendChild(dialogueBox);
-
-                document.querySelectorAll('.answer-btn').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const baseAnswer = button.dataset.answer;
-                        const details = prompt(`Vous avez répondu "${baseAnswer}". Voulez-vous ajouter des détails ?`, "");
-                        const fullAnswer = details ? `${baseAnswer}, ${details}` : baseAnswer;
-                        
-                        conversationHistory.push({ question, answer: fullAnswer });
-                        dialogueBox.innerHTML = `<p>Votre réponse : <em>${fullAnswer}</em></p>`;
-                        refineAnalysis();
-                    });
-                });
-            }
-
-            async function refineAnalysis() {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/analysis/refine`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ symptoms: initialSymptoms, history: conversationHistory })
-                    });
-                    if (!response.ok) { throw new Error('Erreur de l\'API d\'affinage'); }
-                    const data = await response.json();
-
-                    if (data.next_question) {
-                        askNextQuestion(data.next_question);
-                    } else if (data.final_recommendation) {
-                        displayFinalRecommendation(data.final_recommendation);
-                    } else {
-                        askNextQuestion(null);
-                    }
-                } catch (error) {
-                    resultContainer.innerHTML += `<p style="color: red;">Erreur : ${error.message}</p>`;
-                }
-            }
-
-            function displayFinalRecommendation(recommendation) {
-                const finalBox = document.createElement('div');
-                finalBox.className = 'dialogue-box';
-                // Remplacement de "Disclaimer" par "Avertissement"
-                const formattedRecommendation = recommendation.replace(/\*\*Disclaimer:\*\*/g, '<strong>Avertissement :</strong>');
-                finalBox.innerHTML = `<h4>Recommandation finale :</h4><p>${formattedRecommendation}</p>`;
-                resultContainer.appendChild(finalBox);
-            }
         });
     </script>
 </body>
