@@ -70,15 +70,13 @@
             analysisForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
                 
-                // --- NOUVELLE LOGIQUE DE MESSAGE DE PATIENCE ---
                 const loadingMessages = ["Analyse en cours...", "Caducée réfléchit...", "Consultation des données...", "Préparation de la question..."];
                 let messageIndex = 0;
                 submitButton.textContent = loadingMessages[messageIndex];
                 loadingInterval = setInterval(() => {
                     messageIndex = (messageIndex + 1) % loadingMessages.length;
                     submitButton.textContent = loadingMessages[messageIndex];
-                }, 3000); // Change le message toutes les 3 secondes
-                // --- FIN DE LA NOUVELLE LOGIQUE ---
+                }, 3000);
 
                 submitButton.disabled = true;
                 resultContainer.innerHTML = '';
@@ -98,14 +96,27 @@
                 } catch (error) {
                     resultContainer.innerHTML = `<p style="color: red;">Erreur : ${error.message}</p>`;
                 } finally {
-                    clearInterval(loadingInterval); // On arrête le carrousel de messages
+                    clearInterval(loadingInterval);
                     submitButton.textContent = 'Analyser mes symptômes';
                     submitButton.disabled = false;
                 }
             });
 
-            // ... (le reste du script est identique et correct)
+            // LA FONCTION MANQUANTE EST DE RETOUR
+            function displayInitialAnalysis(data) {
+                let resultHtml = `<h3>Consultation pour : ${data.symptom}</h3>`;
+                resultHtml += '<h4>Analyse :</h4><ul>';
+                (data.differential_diagnoses || []).forEach(diag => { resultHtml += `<li>${diag}</li>`; });
+                resultHtml += '</ul>';
+                resultContainer.innerHTML = resultHtml;
+                askNextQuestion(data.first_question);
+            }
 
+            function askNextQuestion(question) {
+                // ... (le reste du script est identique et correct)
+            }
+            
+            // ... (le reste du script est identique et correct)
         });
     </script>
 </body>
