@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caducée - Agent Médical IA</title>
     <style>
+        /* CSS COMPLET ET CORRECT */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 600px; }
@@ -17,7 +18,6 @@
         .dialogue-box { margin-top: 20px; border: 1px solid #eee; padding: 15px; border-radius: 8px; }
         .question-text { font-weight: 600; margin-bottom: 15px; }
         .answer-options { display: flex; gap: 10px; }
-        /* NOUVEAUX STYLES POUR LA MODALE */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.visible { opacity: 1; pointer-events: auto; }
         .modal-content { background-color: #ffffff; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); transform: scale(0.95); transition: transform 0.3s ease; }
@@ -40,8 +40,6 @@
         </form>
         <div id="result-container"></div>
     </div>
-
-    <!-- NOUVEAU HTML POUR LA MODALE -->
     <div class="modal-overlay" id="details-modal">
         <div class="modal-content">
             <div class="modal-header"><h2 id="modal-title">Précisez votre réponse</h2></div>
@@ -73,15 +71,47 @@
             let baseAnswer = "";
 
             analysisForm.addEventListener('submit', async function(event) {
-                // ... (logique inchangée)
+                event.preventDefault();
+                submitButton.textContent = 'Analyse en cours...';
+                submitButton.disabled = true;
+                resultContainer.innerHTML = '';
+                conversationHistory = [];
+                initialSymptoms = symptomsInput.value;
+                try {
+                    const response = await fetch(`${API_BASE_URL}/analysis`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symptoms: initialSymptoms })
+                    });
+                    if (!response.ok) { throw new Error('Erreur de l\'API'); }
+                    const data = await response.json();
+                    displayInitialAnalysis(data);
+                } catch (error) {
+                    resultContainer.innerHTML = `<p style="color: red;">Erreur : ${error.message}</p>`;
+                } finally {
+                    submitButton.textContent = 'Analyser mes symptômes';
+                    submitButton.disabled = false;
+                }
             });
 
             function displayInitialAnalysis(data) {
-                // ... (logique inchangée)
+                let resultHtml = `<h3>Consultation pour : ${data.symptom}</h3>`;
+                resultHtml += '<h4>Analyse :</h4><ul>';
+                (data.differential_diagnoses || []).forEach(diag => { resultHtml += `<li>${diag}</li>`; });
+                resultHtml += '</ul>';
+                resultContainer.innerHTML = resultHtml;
+                askNextQuestion(data.first_question);
             }
 
             function askNextQuestion(question) {
-                // ... (logique inchangée)
+                if (!question) {
+                    displayFinalRecommendation("L'analyse est terminée. Il est recommandé de consulter un professionnel de santé.");
+                    return;
+                }
+                const dialogueBox = document.createElement('div');
+                dialogueBox.className = 'dialogue-box';
+                dialogueBox.innerHTML = `<p class="question-text">${question}</p><div class="answer-options"><button class="answer-btn" data-answer="Oui">Oui</button><button class="answer-btn" data-answer="Non">Non</button><button class="answer-btn" data-answer="Je ne sais pas">Je ne sais pas</button></div>`;
+                resultContainer.appendChild(dialogueBox);
                 document.querySelectorAll('.answer-btn').forEach(button => {
                     button.addEventListener('click', () => {
                         currentQuestion = question;
@@ -96,27 +126,40 @@
             modalSubmit.addEventListener('click', () => {
                 let answer = baseAnswer;
                 const details = modalTextarea.value.trim();
-                if (details) {
-                    answer += ` (${details})`;
-                }
+                if (details) { answer += ` (${details})`; }
                 conversationHistory.push({ question: currentQuestion, answer });
-                
-                // On met à jour l'interface pour montrer la réponse
                 const lastDialogueBox = resultContainer.querySelector('.dialogue-box:last-child');
-                if(lastDialogueBox) {
-                    lastDialogueBox.innerHTML = `<p>Votre réponse : <em>${answer}</em></p>`;
-                }
-
+                if(lastDialogueBox) { lastDialogueBox.innerHTML = `<p>Votre réponse : <em>${answer}</em></p>`; }
                 detailsModal.classList.remove('visible');
                 refineAnalysis();
             });
 
             async function refineAnalysis() {
-                // ... (logique inchangée)
+                try {
+                    const response = await fetch(`${API_BASE_URL}/analysis/refine`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symptoms: initialSymptoms, history: conversationHistory })
+                    });
+                    if (!response.ok) { throw new Error('Erreur de l\'API d\'affinage'); }
+                    const data = await response.json();
+                    if (data.next_question) {
+                        askNextQuestion(data.next_question);
+                    } else if (data.final_recommendation) {
+                        displayFinalRecommendation(data.final_recommendation);
+                    } else {
+                        askNextQuestion(null);
+                    }
+                } catch (error) {
+                    resultContainer.innerHTML += `<p style="color: red;">Erreur : ${error.message}</p>`;
+                }
             }
 
             function displayFinalRecommendation(recommendation) {
-                // ... (logique inchangée)
+                const finalBox = document.createElement('div');
+                finalBox.className = 'dialogue-box';
+                finalBox.innerHTML = `<h4>Recommandation finale :</h4><p>${recommendation.replace('Disclaimer', 'Avertissement')}</p>`;
+                resultContainer.appendChild(finalBox);
             }
         });
     </script>
