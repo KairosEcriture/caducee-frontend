@@ -64,8 +64,7 @@
                 const loadingMessages = ["Analyse en cours...", "Caducée réfléchit...", "Consultation des données...", "Préparation de la question..."];
                 let messageIndex = 0;
                 submitButton.textContent = loadingMessages[messageIndex];
-                // FOND BLEU PENDANT LE CHARGEMENT
-                submitButton.style.backgroundColor = '#3498db';
+                submitButton.style.backgroundColor = '#3498db'; // FOND BLEU
                 loadingInterval = setInterval(() => {
                     messageIndex = (messageIndex + 1) % loadingMessages.length;
                     submitButton.textContent = loadingMessages[messageIndex];
@@ -97,7 +96,6 @@
                 }
             });
 
-            // TOUTES LES FONCTIONS SONT MAINTENANT DÉFINIES
             function displayInitialAnalysis(data) {
                 let resultHtml = `<h3>Consultation pour : ${data.symptom}</h3>`;
                 resultHtml += '<h4>Analyse :</h4><ul>';
