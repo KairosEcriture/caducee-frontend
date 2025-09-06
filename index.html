@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caducée - Agent Médical IA</title>
     <style>
+        /* CSS COMPLET ET MIS À JOUR */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         .container { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
@@ -114,37 +115,69 @@
                 (data.differential_diagnoses || []).forEach(diag => { resultHtml += `<li>${diag}</li>`; });
                 resultHtml += '</ul>';
                 resultContainer.innerHTML = resultHtml;
-                askNextQuestion(data.first_question);
+                askNextQuestion(data.first_question, "yes_no"); // La première question est toujours fermée
             }
 
-            function askNextQuestion(question) {
+            function askNextQuestion(question, answerType) {
                 if (!question) {
                     displayFinalRecommendation("L'analyse est terminée. Il est recommandé de consulter un professionnel de santé.");
                     return;
                 }
+
                 const dialogueBox = document.createElement('div');
                 dialogueBox.className = 'dialogue-box';
-                dialogueBox.innerHTML = `<p class="question-text">${question}</p><div class="answer-options"><button class="answer-btn" data-answer="Oui">Oui</button><button class="answer-btn" data-answer="Non">Non</button><button class="answer-btn" data-answer="Je ne sais pas">Je ne sais pas</button></div>`;
-                resultContainer.appendChild(dialogueBox);
-                document.querySelectorAll('.answer-btn').forEach(button => {
-                    button.addEventListener('click', () => {
-                        currentQuestion = question;
-                        baseAnswer = button.dataset.answer;
-                        modalLabel.textContent = `Vous avez répondu "${baseAnswer}". Voulez-vous ajouter des détails ?`;
-                        modalTextarea.value = '';
-                        detailsModal.classList.add('visible');
-                        modalTextarea.focus();
+                
+                if (answerType === 'open_text') {
+                    // Si la question est ouverte, on ouvre directement la modale
+                    currentQuestion = question;
+                    baseAnswer = ""; // Pas de réponse de base
+                    modalLabel.textContent = question;
+                    modalTextarea.value = '';
+                    modalTextarea.placeholder = "Décrivez ici...";
+                    detailsModal.classList.add('visible');
+                    modalTextarea.focus();
+                } else {
+                    // Sinon, on affiche les boutons
+                    dialogueBox.innerHTML = `<p class="question-text">${question}</p><div class="answer-options"><button class="answer-btn" data-answer="Oui">Oui</button><button class="answer-btn" data-answer="Non">Non</button><button class="answer-btn" data-answer="Je ne sais pas">Je ne sais pas</button></div>`;
+                    resultContainer.appendChild(dialogueBox);
+                    document.querySelectorAll('.answer-btn').forEach(button => {
+                        button.addEventListener('click', () => {
+                            currentQuestion = question;
+                            baseAnswer = button.dataset.answer;
+                            modalLabel.textContent = `Vous avez répondu "${baseAnswer}". Voulez-vous ajouter des détails ?`;
+                            modalTextarea.value = '';
+                            modalTextarea.placeholder = "(Optionnel)";
+                            detailsModal.classList.add('visible');
+                            modalTextarea.focus();
+                        });
                     });
-                });
+                }
             }
             
             modalSubmit.addEventListener('click', () => {
                 let answer = baseAnswer;
                 const details = modalTextarea.value.trim();
-                if (details) { answer += ` (${details})`; }
+                if (details) {
+                    answer = baseAnswer ? `${baseAnswer} (${details})` : details;
+                }
+                
+                if (!answer) { // Cas où la question était ouverte et l'utilisateur n'a rien mis
+                    alert("Veuillez fournir une réponse.");
+                    return;
+                }
+
                 conversationHistory.push({ question: currentQuestion, answer });
+                
                 const lastDialogueBox = resultContainer.querySelector('.dialogue-box:last-child');
-                if(lastDialogueBox) { lastDialogueBox.innerHTML = `<p>Votre réponse : <em>${answer}</em></p>`; }
+                if(lastDialogueBox && baseAnswer) { // Si c'était une question fermée
+                    lastDialogueBox.innerHTML = `<p>Votre réponse : <em>${answer}</em></p>`;
+                } else { // Si c'était une question ouverte
+                    const answerBox = document.createElement('div');
+                    answerBox.className = 'dialogue-box';
+                    answerBox.innerHTML = `<p>Votre réponse : <em>${answer}</em></p>`;
+                    resultContainer.appendChild(answerBox);
+                }
+
                 detailsModal.classList.remove('visible');
                 refineAnalysis();
             });
@@ -163,14 +196,14 @@
                     const data = await response.json();
                     if (!response.ok) { throw new Error(data.detail || 'Erreur de l\'API d\'affinage'); }
                     
-                    loadingIndicator.remove(); // On retire l'indicateur de chargement
+                    loadingIndicator.remove();
 
                     if (data.next_question) {
-                        askNextQuestion(data.next_question);
+                        askNextQuestion(data.next_question, data.answer_type);
                     } else if (data.final_recommendation) {
                         displayFinalRecommendation(data.final_recommendation);
                     } else {
-                        askNextQuestion(null);
+                        askNextQuestion(null, null);
                     }
                 } catch (error) {
                     loadingIndicator.innerHTML = `<p style="color: red;">Erreur : ${error.message}</p>`;
