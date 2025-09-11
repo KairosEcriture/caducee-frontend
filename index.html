@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caducée - Agent Médical IA</title>
     <style>
-        /* CSS COMPLET ET MIS À JOUR */
+        /* CSS COMPLET ET GARANTI */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         .container { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
@@ -37,12 +37,15 @@
 
             function displayFinalRecommendation(recommendation, severity) {
                 const finalBox = document.createElement('div');
-                // ... (logique des couleurs)
-                finalBox.innerHTML = `...`;
+                finalBox.className = 'final-recommendation';
+                const severityClass = (severity || '').toLowerCase().replace(/ /g, '-').replace(/é/g, 'e');
+                if (['bénin', 'modéré', 'consultation-recommandée', 'urgent', 'high'].includes(severityClass)) {
+                    finalBox.classList.add(`severity-${severityClass}`);
+                }
+                finalBox.innerHTML = `<h4>Recommandation finale :</h4><p><strong>Niveau : ${severity || 'Non déterminé'}</strong></p><p>${recommendation.replace('Disclaimer', 'Avertissement')}</p>`;
                 resultContainer.appendChild(finalBox);
 
-                // NOUVELLE LOGIQUE : On ajoute le bouton de géolocalisation
-                if (['modéré', 'consultation-recommandée', 'urgent', 'high'].includes((severity || '').toLowerCase().replace(/ /g, '-').replace(/é/g, 'e'))) {
+                if (['modéré', 'consultation-recommandée', 'urgent', 'high'].includes(severityClass)) {
                     const geoButton = document.createElement('button');
                     geoButton.textContent = '📍 Trouver un médecin à proximité';
                     geoButton.style.marginTop = '15px';
@@ -56,12 +59,9 @@
                     alert("La géolocalisation n'est pas supportée par votre navigateur.");
                     return;
                 }
-                
-                // On affiche un message d'attente
                 const geoStatus = document.createElement('p');
                 geoStatus.textContent = "Recherche en cours...";
                 resultContainer.appendChild(geoStatus);
-
                 navigator.geolocation.getCurrentPosition(async (position) => {
                     const { latitude, longitude } = position.coords;
                     try {
@@ -72,7 +72,7 @@
                         });
                         if (!response.ok) throw new Error('Erreur du service de recherche.');
                         const doctors = await response.json();
-                        geoStatus.remove(); // On retire le message d'attente
+                        geoStatus.remove();
                         displayDoctors(doctors);
                     } catch (e) {
                         geoStatus.textContent = `Erreur : ${e.message}`;
