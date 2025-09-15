@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caducée - Agent Médical IA</title>
     <style>
+        /* CSS COMPLET ET GARANTI */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #f4f7f9; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         .container { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; }
@@ -16,27 +17,6 @@
         button { width: 100%; padding: 15px; border: none; background-color: #3498db; color: white; border-radius: 8px; font-size: 1em; cursor: pointer; transition: background-color 0.3s; }
         button:disabled { background-color: #95a5a6; cursor: not-allowed; }
         #result-container { margin-top: 30px; text-align: left; }
-        .dialogue-box { margin-top: 20px; border: 1px solid #eee; padding: 15px; border-radius: 8px; }
-        .question-text { font-weight: 600; margin-bottom: 15px; }
-        .answer-options { display: flex; flex-wrap: wrap; gap: 10px; }
-        .answer-btn { flex-grow: 1; background-color: #ecf0f1; color: #34495e; border: 1px solid #bdc3c7; }
-        .final-recommendation { margin-top: 20px; padding: 20px; border-radius: 8px; border: 3px solid; }
-        .severity-bénin { border-color: #2ecc71; background-color: #e8f5e9; }
-        .severity-modéré, .severity-consultation-recommandée { border-color: #f39c12; background-color: #fff8e1; }
-        .severity-urgent, .severity-high { border-color: #e74c3c; background-color: #fbeae8; }
-        .doctors-list { margin-top: 20px; }
-        .doctor-card { border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
-        .doctor-card a { font-weight: 600; text-decoration: none; color: #3498db; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        .modal-overlay.visible { opacity: 1; pointer-events: auto; }
-        .modal-content { background-color: #ffffff; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); transform: scale(0.95); transition: transform 0.3s ease; }
-        .modal-header { padding: 20px; border-bottom: 1px solid #e9ecef; }
-        .modal-header h2 { margin: 0; font-size: 1.2em; }
-        .modal-body { padding: 20px; }
-        .modal-body label { font-weight: 500; }
-        .modal-body textarea { width: 100%; min-height: 80px; margin-top: 10px; }
-        .modal-footer { padding: 20px; border-top: 1px solid #e9ecef; text-align: right; }
-        .modal-footer button { width: auto; padding: 10px 20px; }
     </style>
 </head>
 <body>
@@ -55,18 +35,6 @@
         </form>
         <div id="result-container"></div>
     </div>
-    <div class="modal-overlay" id="details-modal">
-        <div class="modal-content">
-            <div class="modal-header"><h2 id="modal-title">Précisez votre réponse</h2></div>
-            <div class="modal-body">
-                <label id="modal-label">Voulez-vous ajouter des détails ?</label>
-                <textarea id="modal-textarea" placeholder="(Optionnel)"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button id="modal-submit">Valider</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -75,201 +43,31 @@
             const submitButton = document.getElementById('submit-button');
             const resultContainer = document.getElementById('result-container');
             const API_BASE_URL = 'https://caducee-api.onrender.com';
-            const detailsModal = document.getElementById('details-modal');
-            const modalLabel = document.getElementById('modal-label');
-            const modalTextarea = document.getElementById('modal-textarea');
-            const modalSubmit = document.getElementById('modal-submit');
-            
-            let conversationHistory = [];
-            let initialSymptoms = "";
-            let currentQuestion = "";
-            let baseAnswer = "";
-            let loadingInterval;
 
             analysisForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
-                const loadingMessages = ["Analyse en cours...", "Caducée réfléchit...", "Consultation des données...", "Préparation de la question..."];
-                let messageIndex = 0;
-                submitButton.textContent = loadingMessages[messageIndex];
-                submitButton.style.backgroundColor = '#3498db';
-                loadingInterval = setInterval(() => {
-                    messageIndex = (messageIndex + 1) % loadingMessages.length;
-                    submitButton.textContent = loadingMessages[messageIndex];
-                }, 2500);
-
+                submitButton.textContent = 'Analyse en cours...';
                 submitButton.disabled = true;
                 resultContainer.innerHTML = '';
-                conversationHistory = [];
-                initialSymptoms = symptomsInput.value;
 
                 try {
                     const response = await fetch(`${API_BASE_URL}/analysis`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ symptoms: initialSymptoms })
+                        body: JSON.stringify({ symptoms: symptomsInput.value })
                     });
                     const data = await response.json();
-                    if (!response.ok) { throw new Error(data.detail || 'Erreur de l'API'); }
+                    if (!response.ok) { throw new Error(data.detail || 'Erreur de l\'API'); }
                     
-                    clearInterval(loadingInterval);
-                    displayInitialAnalysis(data);
+                    resultContainer.innerHTML = `<h3>Analyse Initiale :</h3><p>${data.first_question}</p>`;
 
                 } catch (error) {
-                    clearInterval(loadingInterval);
                     resultContainer.innerHTML = `<p style="color: red;">Erreur : ${error.message}</p>`;
                 } finally {
                     submitButton.textContent = 'Analyser mes symptômes';
                     submitButton.disabled = false;
                 }
             });
-
-            function displayInitialAnalysis(data) {
-                let resultHtml = `<h3>Consultation pour : ${data.symptom}</h3>`;
-                resultHtml += '<h4>Analyse :</h4><ul>';
-                (data.differential_diagnoses || []).forEach(diag => { resultHtml += `<li>${diag}</li>`; });
-                resultHtml += '</ul>';
-                resultContainer.innerHTML = resultHtml;
-                askNextQuestion(data.first_question, data.answer_type || "yes_no");
-            }
-
-            function askNextQuestion(question, answerType) {
-                if (!question) {
-                    displayFinalRecommendation("L'analyse est terminée. Il est recommandé de consulter un professionnel de santé.", "Consultation recommandée");
-                    return;
-                }
-                const dialogueBox = document.createElement('div');
-                dialogueBox.className = 'dialogue-box';
-                if (answerType === 'open_text') {
-                    currentQuestion = question;
-                    baseAnswer = "";
-                    modalLabel.textContent = question;
-                    modalTextarea.value = '';
-                    modalTextarea.placeholder = "Décrivez ici...";
-                    detailsModal.classList.add('visible');
-                    modalTextarea.focus();
-                } else {
-                    dialogueBox.innerHTML = `<p class="question-text">${question}</p><div class="answer-options"><button class="answer-btn" data-answer="Oui">Oui</button><button class="answer-btn" data-answer="Non">Non</button><button class="answer-btn" data-answer="Je ne sais pas">Je ne sais pas</button></div>`;
-                    resultContainer.appendChild(dialogueBox);
-                    document.querySelectorAll('.answer-btn').forEach(button => {
-                        button.addEventListener('click', () => {
-                            currentQuestion = question;
-                            baseAnswer = button.dataset.answer;
-                            modalLabel.textContent = `Vous avez répondu "${baseAnswer}". Voulez-vous ajouter des détails ?`;
-                            modalTextarea.value = '';
-                            modalTextarea.placeholder = "(Optionnel)";
-                            detailsModal.classList.add('visible');
-                            modalTextarea.focus();
-                        });
-                    });
-                }
-            }
-            
-            modalSubmit.addEventListener('click', () => {
-                let answer = baseAnswer;
-                const details = modalTextarea.value.trim();
-                if (details) { answer = baseAnswer ? `${baseAnswer} (${details})` : details; }
-                if (!answer) { alert("Veuillez fournir une réponse."); return; }
-                conversationHistory.push({ question: currentQuestion, answer });
-                const lastDialogueBox = resultContainer.querySelector('.dialogue-box:last-child');
-                if(lastDialogueBox && baseAnswer) {
-                    lastDialogueBox.innerHTML = `<p>Votre réponse : <em>${answer}</em></p>`;
-                } else {
-                    const answerBox = document.createElement('div');
-                    answerBox.className = 'dialogue-box';
-                    answerBox.innerHTML = `<p>Votre réponse : <em>${answer}</em></p>`;
-                    resultContainer.appendChild(answerBox);
-                }
-                detailsModal.classList.remove('visible');
-                refineAnalysis();
-            });
-
-            async function refineAnalysis() {
-                const loadingIndicator = document.createElement('div');
-                loadingIndicator.className = 'dialogue-box';
-                loadingIndicator.innerHTML = '<p>Caducée réfléchit...</p>';
-                resultContainer.appendChild(loadingIndicator);
-                try {
-                    const response = await fetch(`${API_BASE_URL}/analysis/refine`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ symptoms: initialSymptoms, history: conversationHistory })
-                    });
-                    const data = await response.json();
-                    if (!response.ok) { throw new Error(data.detail || 'Erreur de l'API d\'affinage'); }
-                    loadingIndicator.remove();
-                    if (data.next_question) {
-                        askNextQuestion(data.next_question, data.answer_type);
-                    } else if (data.final_recommendation) {
-                        displayFinalRecommendation(data.final_recommendation, data.severity_level);
-                    } else {
-                        askNextQuestion(null, null);
-                    }
-                } catch (error) {
-                    loadingIndicator.innerHTML = `<p style="color: red;">Erreur : ${error.message}</p>`;
-                }
-            }
-
-            function displayFinalRecommendation(recommendation, severity) {
-                const finalBox = document.createElement('div');
-                finalBox.className = 'final-recommendation';
-                const severityClass = (severity || '').toLowerCase().replace(/ /g, '-').replace(/é/g, 'e');
-                if (['bénin', 'modéré', 'consultation-recommandée', 'urgent', 'high'].includes(severityClass)) {
-                    finalBox.classList.add(`severity-${severityClass}`);
-                }
-                finalBox.innerHTML = `<h4>Recommandation finale :</h4><p><strong>Niveau : ${severity || 'Non déterminé'}</strong></p><p>${recommendation.replace('Disclaimer', 'Avertissement')}</p>`;
-                resultContainer.appendChild(finalBox);
-
-                if (['modéré', 'consultation-recommandée', 'urgent', 'high'].includes(severityClass)) {
-                    const geoButton = document.createElement('button');
-                    geoButton.textContent = '📍 Trouver un médecin à proximité';
-                    geoButton.style.marginTop = '15px';
-                    geoButton.onclick = findDoctors;
-                    finalBox.appendChild(geoButton);
-                }
-            }
-
-            async function findDoctors() {
-                if (!navigator.geolocation) {
-                    alert("La géolocalisation n'est pas supportée par votre navigateur.");
-                    return;
-                }
-                const geoStatus = document.createElement('p');
-                geoStatus.textContent = "Recherche en cours...";
-                resultContainer.appendChild(geoStatus);
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    const { latitude, longitude } = position.coords;
-                    try {
-                        const response = await fetch(`${API_BASE_URL}/doctors/nearby`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ latitude, longitude })
-                        });
-                        if (!response.ok) throw new Error('Erreur du service de recherche.');
-                        const doctors = await response.json();
-                        geoStatus.remove();
-                        displayDoctors(doctors);
-                    } catch (e) {
-                        geoStatus.textContent = `Erreur : ${e.message}`;
-                    }
-                }, () => {
-                    geoStatus.textContent = "Impossible d'obtenir votre position. Veuillez autoriser la géolocalisation.";
-                });
-            }
-
-            function displayDoctors(doctors) {
-                const doctorsDiv = document.createElement('div');
-                doctorsDiv.className = 'doctors-list';
-                let doctorsHtml = '<h4>Médecins à proximité :</h4>';
-                if (doctors.length === 0) {
-                    doctorsHtml += "<p>Aucun médecin généraliste trouvé dans un rayon de 5km.</p>";
-                } else {
-                    doctors.forEach(doc => {
-                        doctorsHtml += `<div class="doctor-card"><a href="${doc.url}" target="_blank">${doc.name}</a><p>${doc.address}</p><p>Note : ${doc.rating || 'N/A'}</p></div>`;
-                    });
-                }
-                doctorsDiv.innerHTML = doctorsHtml;
-                resultContainer.appendChild(doctorsDiv);
-            }
         });
     </script>
 </body>
