@@ -51,9 +51,20 @@
                 resultContainer.innerHTML = '';
 
                 try {
+                    // === LA CORRECTION EST ICI ===
+                    const token = localStorage.getItem('caducee_access_token');
+                    if (!token) {
+                        // Si pas de token, on redirige vers la page de connexion
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    
                     const response = await fetch(`${API_BASE_URL}/analysis`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // On envoie le laissez-passer
+                        },
                         body: JSON.stringify({ symptoms: symptomsInput.value })
                     });
                     const data = await response.json();
