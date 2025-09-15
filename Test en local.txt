@@ -1,0 +1,115 @@
+uvicorn main_api:app --reload
+
+AIzaSyBOakNsx_RHXHnVwI605wO7FXA7P3HoiLE
+
+--------------------------
+Excellente décision, Capitaine. C'est la méthode des professionnels.
+
+Vous avez raison. On ne fait jamais de "chirurgie à cœur ouvert" sur un navire en pleine mer avec des passagers à bord.
+
+Nous allons donc construire notre Version 2 entièrement dans notre chantier naval local, et nous ne la mettrons en ligne qu'une fois qu'elle sera parfaite.
+
+Voici la procédure exacte.
+
+Procédure de Développement en Local ("Mode Chantier Naval")
+Étape 1 : Dupliquer et Isoler l'Environnement
+
+Nous allons créer une copie de notre projet pour ne jamais risquer d'endommager la version en ligne.
+
+Dupliquez le Dossier API :
+
+Dans votre Explorateur de Fichiers, trouvez votre dossier caducee-api.
+
+Copiez-le et collez-le. Renommez la copie en caducee-api-v2. C'est dans ce nouveau dossier que nous travaillerons.
+
+Dupliquez le Dossier Frontend :
+
+Faites de même avec votre dossier caducee-frontend.
+
+Renommez la copie en caducee-frontend-v2.
+
+Résultat : Nous avons maintenant un environnement de développement V2 complètement isolé. Les modifications que nous y ferons n'auront aucun impact sur les versions en ligne.
+
+Étape 2 : Configurer l'API pour le Travail Local
+
+Ouvrez le projet caducee-api-v2 dans votre éditeur de code (VS Code).
+
+Créez un fichier .env à la racine de ce dossier. C'est ce fichier qui simulera l'environnement de Render sur votre machine.
+
+Remplissez le fichier .env avec vos clés secrètes. Il doit contenir ceci :
+
+code
+Code
+download
+content_copy
+expand_less
+
+GOOGLE_API_KEY="AIzaSy..."
+GOOGLE_MAPS_API_KEY="AIzaSy..."
+# Pas besoin de SECRET_KEY pour l'instant, le code en a une par défaut
+
+Installez une dépendance pour que notre API puisse lire ce fichier. Dans le terminal de VS Code (ou PowerShell) dans le dossier caducee-api-v2, tapez :
+
+code
+Powershell
+download
+content_copy
+expand_less
+IGNORE_WHEN_COPYING_START
+IGNORE_WHEN_COPYING_END
+pip install python-dotenv
+
+Puis ajoutez python-dotenv à votre fichier requirements.txt.
+
+Étape 3 : Le Nouveau Cycle de Développement
+
+Notre routine de travail va maintenant être 100% locale.
+
+Modification du Code :
+
+Je vous fournirai les nouvelles versions de main_api.py (avec les comptes utilisateurs, etc.).
+
+Vous les mettrez à jour dans votre dossier caducee-api-v2.
+
+Lancement du Serveur Local :
+
+Vous ouvrirez un terminal dans caducee-api-v2 et lancerez le serveur comme nous l'avons déjà fait :
+
+code
+Powershell
+download
+content_copy
+expand_less
+IGNORE_WHEN_COPYING_START
+IGNORE_WHEN_COPYING_END
+uvicorn main_api:app --reload
+
+Test de l'API en Local :
+
+Vous utiliserez la page /docs locale : http://127.0.0.1:8000/docs. C'est là que nous validerons chaque nouvel endpoint (inscription, connexion...).
+
+Développement du Frontend en Local :
+
+Je vous fournirai les nouveaux fichiers HTML (login.html, dashboard.html...).
+
+Vous les créerez dans votre dossier caducee-frontend-v2.
+
+Vous modifierez le API_BASE_URL dans le JavaScript pour qu'il pointe vers http://127.0.0.1:8000.
+
+Vous testerez en ouvrant les fichiers HTML directement dans votre navigateur.
+
+Étape 4 : Le Déploiement (Le Jour de la Victoire)
+
+Une fois que la V2 sera entièrement fonctionnelle et validée en local, nous procéderons au déploiement.
+
+Nous mettrons à jour le API_BASE_URL dans les fichiers HTML pour qu'il pointe de nouveau vers l'URL de Render.
+
+Nous enverrons tout le contenu de nos dossiers ...-v2 sur GitHub.
+
+Render déploiera la nouvelle version, remplaçant l'ancienne.
+
+Notre Première Manœuvre
+
+La première étape est de construire le moteur de la V2.
+
+Êtes-vous prêt à recevoir la première version de main_api.py pour la V2, celle qui introduira les comptes utilisateurs et le profil médical ?
