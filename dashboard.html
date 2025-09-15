@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - Caducée</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f9; margin: 0; }
+        .dashboard-container { max-width: 900px; margin: 40px auto; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { color: #2c3e50; }
+        #logout-btn { background-color: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        .profile-section, .history-section { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        h2 { border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .profile-form .input-group { margin-bottom: 15px; }
+        .profile-form label { font-weight: 600; }
+        .profile-form input, .profile-form textarea { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; margin-top: 5px; box-sizing: border-box; }
+        .consultation-card { border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>Votre Carnet de Santé</h1>
+            <button id="logout-btn">Déconnexion</button>
+        </header>
+
+        <section class="profile-section">
+            <h2>Mon Profil Médical</h2>
+            <form id="profile-form">
+                <div class="input-group"><label>Email: <span id="profile-email"></span></label></div>
+                <div class="input-group"><label for="age">Âge</label><input type="number" id="age"></div>
+                <div class="input-group"><label for="sex">Sexe</label><input type="text" id="sex"></div>
+                <div class="input-group"><label for="medical-history">Antécédents</label><textarea id="medical-history"></textarea></div>
+                <div class="input-group"><label for="allergies">Allergies</label><textarea id="allergies"></textarea></div>
+                <button type="submit">Mettre à jour le profil</button>
+            </form>
+        </section>
+
+        <section class="history-section">
+            <h2>Historique des Consultations</h2>
+            <div id="history-list"></div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('caducee_access_token');
+            if (!token) { window.location.href = 'login.html'; return; }
+
+            const API_BASE_URL = 'http://127.0.0.1:8000';
+            const profileEmail = document.getElementById('profile-email');
+            const ageInput = document.getElementById('age');
+            const sexInput = document.getElementById('sex');
+            const historyInput = document.getElementById('medical-history');
+            const allergiesInput = document.getElementById('allergies');
+            const historyList = document.getElementById('history-list');
+            const profileForm = document.getElementById('profile-form');
+            
+            async function loadUserData() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    const user = await response.json();
+                    profileEmail.textContent = user.email;
+                    ageInput.value = user.age || '';
+                    sexInput.value = user.sex || '';
+                    historyInput.value = user.medical_history || '';
+                    allergiesInput.value = user.allergies || '';
+
+                    const consultationsResponse = await fetch(`${API_BASE_URL}/consultations`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    const consultations = await consultationsResponse.json();
+                    historyList.innerHTML = '';
+                    consultations.forEach(c => {
+                        const card = document.createElement('div');
+                        card.className = 'consultation-card';
+                        card.innerHTML = `<p><strong>Symptôme:</strong> ${c.symptom}</p><p><strong>Recommandation:</strong> ${c.final_recommendation}</p><p><strong>Niveau:</strong> ${c.severity_level}</p>`;
+                        historyList.appendChild(card);
+                    });
+                } catch (e) { console.error(e); }
+            }
+
+            profileForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const updatedData = {
+                    age: parseInt(ageInput.value) || null,
+                    sex: sexInput.value,
+                    medical_history: historyInput.value,
+                    allergies: allergiesInput.value
+                };
+                await fetch(`${API_BASE_URL}/users/me`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData)
+                });
+                alert('Profil mis à jour !');
+            });
+
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.removeItem('caducee_access_token');
+                window.location.href = 'login.html';
+            });
+
+            loadUserData();
+        });
+    </script>
+</body>
+</html>
