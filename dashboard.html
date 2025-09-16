@@ -11,11 +11,13 @@
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         h1 { color: #2c3e50; }
         #logout-btn { background-color: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
-        .profile-section, .history-section { background-color: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .profile-section, .history-section { background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
         h2 { border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .profile-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .profile-form .input-group { margin-bottom: 15px; }
         .profile-form label { font-weight: 600; }
         .profile-form input, .profile-form textarea { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; margin-top: 5px; box-sizing: border-box; }
+        .full-width { grid-column: 1 / -1; }
         .consultation-card { border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
         .consultation-card p { margin: 5px 0; }
         .consultation-card .date { font-size: 0.8em; color: #777; }
@@ -33,18 +35,18 @@
 
         <section class="profile-section">
             <h2>Mon Profil Médical</h2>
-            <form id="profile-form">
-                <div class="input-group"><label>Email: <span id="profile-email" style="font-weight: normal;"></span></label></div>
+            <form id="profile-form" class="profile-form">
+                <div class="input-group full-width"><label>Email: <span id="profile-email" style="font-weight: normal;"></span></label></div>
                 <div class="input-group"><label for="first_name">Prénom</label><input type="text" id="first_name"></div>
                 <div class="input-group"><label for="last_name">Nom</label><input type="text" id="last_name"></div>
                 <div class="input-group"><label for="birth_date">Date de naissance</label><input type="date" id="birth_date"></div>
                 <div class="input-group"><label for="birth_place">Lieu de naissance</label><input type="text" id="birth_place"></div>
-                <div class="input-group"><label for="address">Adresse</label><input type="text" id="address"></div>
+                <div class="input-group full-width"><label for="address">Adresse</label><input type="text" id="address"></div>
                 <div class="input-group"><label for="phone_number">Téléphone</label><input type="tel" id="phone_number"></div>
                 <div class="input-group"><label for="sex">Sexe</label><input type="text" id="sex"></div>
-                <div class="input-group"><label for="medical-history">Antécédents</label><textarea id="medical-history"></textarea></div>
-                <div class="input-group"><label for="allergies">Allergies</label><textarea id="allergies"></textarea></div>
-                <button type="submit">Mettre à jour le profil</button>
+                <div class="input-group full-width"><label for="medical-history">Antécédents</label><textarea id="medical-history"></textarea></div>
+                <div class="input-group full-width"><label for="allergies">Allergies</label><textarea id="allergies"></textarea></div>
+                <div class="input-group full-width"><button type="submit">Mettre à jour le profil</button></div>
             </form>
         </section>
 
