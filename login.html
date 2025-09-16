@@ -10,9 +10,11 @@
         .auth-container { background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
         h1 { color: #2c3e50; }
         .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
         input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
         button { width: 100%; padding: 15px; border: none; background-color: #3498db; color: white; border-radius: 8px; font-size: 1em; cursor: pointer; }
         .extra-links { margin-top: 20px; }
+        a { color: #3498db; }
         #error-message { color: #e74c3c; margin-bottom: 15px; display: none; }
     </style>
 </head>
@@ -23,13 +25,13 @@
             <p id="error-message"></p>
             <div class="input-group">
                 <label for="email">Email</label>
-                <input type="email" id="email" required>
+                <input type="email" id="email" required autocomplete="username">
             </div>
             <div class="input-group">
                 <label for="password">Mot de passe</label>
-                <input type="password" id="password" required>
+                <input type="password" id="password" required autocomplete="current-password">
             </div>
-            <button type="submit">Se Connecter</button>
+            <button type="submit" id="login-button">Se Connecter</button>
         </form>
         <div class="extra-links">
             <p>Pas encore de compte ? <a href="register.html">Inscrivez-vous</a></p>
@@ -41,11 +43,14 @@
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
             const errorMessage = document.getElementById('error-message');
-            const API_BASE_URL = 'http://127.0.0.1:8000';
+            // L'URL pointe maintenant vers l'API EN LIGNE
+            const API_BASE_URL = 'https://caducee-api.onrender.com';
 
             loginForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
                 errorMessage.style.display = 'none';
+                document.getElementById('login-button').disabled = true;
+                document.getElementById('login-button').textContent = 'Connexion...';
 
                 const formData = new URLSearchParams();
                 formData.append('username', emailInput.value);
@@ -66,6 +71,9 @@
                 } catch (error) {
                     errorMessage.textContent = `Erreur : ${error.message}`;
                     errorMessage.style.display = 'block';
+                } finally {
+                    document.getElementById('login-button').disabled = false;
+                    document.getElementById('login-button').textContent = 'Se Connecter';
                 }
             });
         });
